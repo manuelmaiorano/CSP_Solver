@@ -94,24 +94,3 @@ string Solver::toString(){
 map<string, string>& Solver::GetAssignment(){
     return assignment;
 }
-
-void printSudoku(map<string, string> assignment){
-    string b = "V";
-    for(int i = 1; i<=9; i++){
-        for(int j = 1; j<=9; j++){
-            char ic = i + '0';
-            char jc = j + '0';
-            b+=ic; b+=jc;
-            if(assignment.count(b) > 0){
-                cout<< assignment[b] +" ";
-            }
-            else{
-                cout<<"0 ";
-            }
-            b.pop_back(); b.pop_back();
-        }
-        cout<< endl;
-    
-    }
-    cout << endl;
-}
