@@ -1,4 +1,6 @@
-#include <problem.h>
+#include "problem.h"
+#include "solver.h"
+#include <iostream>
 
 
 Problem getNQueenProblem(int N){
@@ -21,8 +23,8 @@ Problem getNQueenProblem(int N){
         b.pop_back();
     }
 
-    for(auto& [var1,_]: csp.GetVariablesDomain()){
-        for(auto& [var2,_]: csp.GetVariablesDomain()){
+    for(auto& [var1, dom1]: csp.GetVariablesDomain()){
+        for(auto& [var2, dom2]: csp.GetVariablesDomain()){
             int ncol1 = var1.back() - '0';
             int ncol2 = var2.back() - '0';
             if(ncol2 <= ncol1) continue;
@@ -31,4 +33,21 @@ Problem getNQueenProblem(int N){
         }
     }
     return csp;
+}
+
+void printAssignment(map<string, string> assign){
+    for(auto const& [var, value]: assign){
+        cout<<var<< " : "<< value<<endl;
+    }
+}
+
+int main(){
+
+    Problem problem = getNQueenProblem(8);
+    Solver solver;
+    solver.solve(problem, NULL);
+    auto assignment = solver.GetAssignment();
+    printAssignment(assignment);
+    return 0;
+
 }

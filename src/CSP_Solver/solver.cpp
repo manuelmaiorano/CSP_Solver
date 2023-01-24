@@ -61,7 +61,9 @@ string selectUnassigned(map<string, set<string>>& currDomain, int domainSize, ma
 
 bool Solver::BackTrack(Problem& csp, map<string, set<string>>& currDomain, function<void(int)> callback){
     if(assignment.size() == csp.nVariables()) return true;
-    callback(assignment.size());
+    if (callback){
+        callback(assignment.size());
+    }
     string var = selectUnassigned(currDomain, csp.domainSize(), assignment);
     for(auto& value: currDomain[var]){
         map<string, set<string>> domainCopy = currDomain;

@@ -28,10 +28,6 @@ Problem getAustraliaProblem(){
     return csp;
 }
 
-void callback(int percentage){
-    return;
-}
-
 void printAssignment(map<string, string> assign){
     for(auto const& [var, value]: assign){
         cout<<var<< " : "<< value<<endl;
@@ -42,7 +38,7 @@ int main(){
 
     Problem problem = getAustraliaProblem();
     Solver solver;
-    solver.solve(problem, &callback);
+    solver.solve(problem, NULL);
     auto assignment = solver.GetAssignment();
     printAssignment(assignment);
     return 0;

@@ -17,5 +17,3 @@ class Solver{
         map<string, string> assignment;
 
 };
-
-void printSudoku(map<string, string> assignment);

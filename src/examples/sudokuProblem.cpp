@@ -8,7 +8,7 @@ using namespace std;
 
 static auto diffConst = make_shared<DiffConstraint>(DiffConstraint());
 
-void printSudoku(map<string, string> assignment){
+void printSudoku(map<string, string>& assignment){
     string b = "V";
     for(int i = 1; i<=9; i++){
         for(int j = 1; j<=9; j++){
@@ -21,9 +21,15 @@ void printSudoku(map<string, string> assignment){
             else{
                 cout<<"0 ";
             }
+            if(j % 3 == 0 && j != 9){
+                cout<< " | ";
+            }
             b.pop_back(); b.pop_back();
         }
         cout<< endl;
+        if(i % 3 == 0 && i != 9){
+            cout<< "-------+--------+------"<<endl;
+        }
     
     }
     cout << endl;
@@ -81,8 +87,6 @@ Problem getSudoku(map<string, string>& fixed){
     }
     Problem csp{domain};
 
-    int sz;
-
     string b = "V";
     vector<vector<string>> vars;
     for(int i = 1; i <= 9; i++){
@@ -108,27 +112,19 @@ Problem getSudoku(map<string, string>& fixed){
         }
     }
 
-    sz = csp.constrSize();
-
     for(int row = 0; row <= 8; row++){
         addRowConstr(csp, vars, row);
     }
 
-    sz = csp.constrSize();
-
     for(int col = 0; col <= 8; col++){
         addColumnConstr(csp, vars, col);
     }
-
-    sz = csp.constrSize();
 
     for(int row = 0; row <= 2; row++){
         for(int col = 0; col <= 2; col++){
             addBlkConstr(csp, vars, row, col);
         }
     }
-
-    sz = csp.constrSize();
 
     return csp;
 }
@@ -157,7 +153,34 @@ Problem getSudokuFromFile(string filename){
             curr_col = 1;
         }
     }
-
+    printSudoku(fixed);
     return getSudoku(fixed);
 
+}
+
+
+
+int main(){
+    Problem problem = getSudokuFromFile("..\\..\\files\\sud.txt");
+    Solver solver;
+    int n_var = problem.nVariables();
+    int lastp = -1;
+    string s = "percentage: ";
+
+    try{
+        solver.solve(problem, [n_var, &lastp, &s](int size_so_far){ 
+            int p = size_so_far *100/n_var;
+            if(p > lastp){
+                cout<< "\r" << s << p << "%" << flush;
+                lastp = p;
+            }
+        });
+        cout << "\r" << s << "100%" << endl;
+        //cout << solver.toString();
+        printSudoku(solver.GetAssignment());
+    }
+    catch(const char* msg){
+        cout << msg;
+    }
+    return 0;
 }
