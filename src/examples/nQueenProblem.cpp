@@ -1,6 +1,7 @@
 #include "problem.h"
 #include "solver.h"
 #include <iostream>
+#include <chrono>
 
 
 Problem getNQueenProblem(int N){
@@ -45,9 +46,23 @@ int main(){
 
     Problem problem = getNQueenProblem(8);
     Solver solver;
+    auto t1 = chrono::high_resolution_clock::now();
     solver.solve(problem, NULL);
+    auto t2 = chrono::high_resolution_clock::now();
+    auto duration = chrono::duration_cast<chrono::milliseconds> (t2 -t1).count();
+    cout<<"elapsed : " << duration<< endl;
     auto assignment = solver.GetAssignment();
     printAssignment(assignment);
-    return 0;
+
+    cout<<" doing parallel now"<< endl;
+
+    Solver solver1;
+    t1 = chrono::high_resolution_clock::now();
+    solver1.parallel_solve(problem, NULL);
+    t2 = chrono::high_resolution_clock::now();
+    duration = chrono::duration_cast<chrono::milliseconds> (t2 -t1).count();
+    cout<<"elapsed : " << duration<< endl;
+    assignment = solver1.GetAssignment();
+    printAssignment(assignment);
 
 }

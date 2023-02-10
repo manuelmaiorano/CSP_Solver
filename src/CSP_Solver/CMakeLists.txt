@@ -1,4 +1,4 @@
-add_library(SolverLib solver.cpp)
+add_library(SolverLib solver.cpp ThreadPool.cpp)
 add_library(ProblemLib problem.cpp)
 add_library(AlgorithmsLib algorithms.cpp)
 

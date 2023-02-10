@@ -1,7 +1,9 @@
 #include <iostream>
+#include <thread>
 #include "solver.h"
 #include "problem.h"
 #include "algorithms.h"
+#include "ThreadPool.h"
 
 bool ReviseDomain(Problem& csp, const pair<string, string>& arc, 
                 set<string>& domain_first, set<string>& domain_second){
@@ -83,6 +85,88 @@ bool Solver::BackTrack(Problem& csp, map<string, set<string>>& currDomain, funct
 map<string, string>& Solver::solve(Problem& csp, function<void(int)> callback){
     if(!BackTrack(csp, csp.GetVariablesDomain(), callback)) throw "cannot solve";
     return assignment;
+}
+
+
+map<string, string>& Solver::parallel_solve(Problem& csp, function<void(int)> callback){
+    stack<FrontierNode> initial_frontier;
+    map<string, string> empty_assignment;
+    auto var = selectUnassigned(csp.GetVariablesDomain(), csp.domainSize(), empty_assignment);
+    for (auto& val: csp.GetVariableDomain(var)){
+        FrontierNode node;
+        map<string, set<string>> domainCopy = csp.GetVariablesDomain();
+        map<string, string> new_assigment;
+        domainCopy[var] = {val};
+        new_assigment[var] = val;
+        MAC(csp, domainCopy, var);
+        node.partial_assignment = new_assigment;
+        node.domain = domainCopy;
+        initial_frontier.push(node);
+    }
+    pool.Start();
+
+    pool.QueueJob([initial_frontier, this, &csp](){
+        this->searchParallel(csp, initial_frontier);
+    });
+
+    unique_lock lk(doneVariableMutex);
+    this->conditionOnDone.wait(lk, [this]{return this->done;});
+    lk.unlock();
+
+    pool.Stop();
+    return this->assignment;
+
+}
+
+void Solver::searchParallel(Problem& csp, stack<FrontierNode> frontier){
+    while (!frontier.empty()){
+        FrontierNode node = frontier.top();
+        frontier.pop();
+        if (node.partial_assignment.size() == csp.nVariables()){
+            {
+                lock_guard lk(this->doneVariableMutex);
+                done = true;
+                this->assignment = node.partial_assignment;
+            }
+            this->conditionOnDone.notify_all();
+            return;
+        }
+        if (frontier.size() > MAX_FRONTIER_SIZE_PER_JOB){
+            {
+                lock_guard lk(doneVariableMutex);
+                if(done){
+                    return;
+                }
+            }
+            stack<FrontierNode> newFrontier;
+            while(frontier.size() > MAX_FRONTIER_SIZE_PER_JOB/2){
+                FrontierNode node = frontier.top();
+                frontier.pop();
+                newFrontier.push(node);
+            }
+            pool.QueueJob([newFrontier, this, &csp]{
+                this->searchParallel(csp, newFrontier);
+            });
+        }
+        auto var = selectUnassigned(node.domain, csp.domainSize(), node.partial_assignment);
+        for(auto& val: node.domain[var]){
+            map<string, set<string>> domainCopy = node.domain;
+            domainCopy[var] = {val};
+            map<string, string> assignmentCopy = node.partial_assignment;
+            assignmentCopy[var] = val;
+            bool isValid = MAC(csp, domainCopy, var);
+            if(!isValid) {
+                continue;
+            }
+            FrontierNode new_node;
+            new_node.partial_assignment = assignmentCopy;
+            new_node.domain = domainCopy;
+            frontier.push(new_node);
+        }
+
+
+    }
+
 }
 
 string Solver::toString(){

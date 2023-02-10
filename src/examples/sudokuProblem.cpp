@@ -3,6 +3,7 @@
 #include <problem.h>
 #include "constraint.h"
 #include "solver.h"
+#include <chrono>
 
 using namespace std;
 
@@ -168,6 +169,7 @@ int main(){
     string s = "percentage: ";
 
     try{
+        auto t1 = chrono::high_resolution_clock::now();
         solver.solve(problem, [n_var, &lastp, &s](int size_so_far){ 
             int p = size_so_far *100/n_var;
             if(p > lastp){
@@ -175,9 +177,21 @@ int main(){
                 lastp = p;
             }
         });
+        auto t2 = chrono::high_resolution_clock::now();
+        auto duration = chrono::duration_cast<chrono::milliseconds> (t2 -t1).count();
         cout << "\r" << s << "100%" << endl;
         //cout << solver.toString();
         printSudoku(solver.GetAssignment());
+        cout<<"elapsed : " <<duration<<endl;
+        cout<<" doing parallel now"<< endl;
+
+        Solver solver1;
+        t1 = chrono::high_resolution_clock::now();
+        solver1.parallel_solve(problem, NULL);
+        t2 = chrono::high_resolution_clock::now();
+        duration = chrono::duration_cast<chrono::milliseconds> (t2 -t1).count();
+        cout<<"elapsed : " << duration<< endl;
+        printSudoku(solver1.GetAssignment());
     }
     catch(const char* msg){
         cout << msg;
