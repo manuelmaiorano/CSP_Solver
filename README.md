@@ -25,7 +25,7 @@ T : blue
 V : blue
 WA : blue
 ```
-a sudoku (hard mode), here i test the parallel version and compare elapsed time in milliseconds (2 core machine):
+a sudoku:
 ```bash
 .\SudokuProblem.exe
 0 0 0  | 0 0 7  | 0 9 0 
@@ -52,19 +52,4 @@ percentage: 100%
 3 6 8  | 4 9 1  | 7 2 5
 5 4 1  | 2 7 3  | 8 6 9 
 2 9 7  | 8 6 5  | 3 1 4
-
-elapsed : 212
- doing parallel now
-elapsed : 151
-4 6 8  | 1 5 7  | 2 9 3
-5 7 1  | 9 2 3  | 4 6 8
-2 3 9  | 6 4 8  | 5 1 7
--------+--------+------
-7 8 5  | 3 1 2  | 9 4 6 
-9 1 4  | 5 8 6  | 7 3 2
-6 2 3  | 7 9 4  | 1 8 5
--------+--------+------
-3 9 2  | 8 7 1  | 6 5 4 
-1 4 6  | 2 3 5  | 8 7 9
-8 5 7  | 4 6 9  | 3 2 1 
 ```
